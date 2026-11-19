@@ -1,0 +1,63 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for vector-role
+---
+- name: Download Vector distrib
+  ansible.builtin.get_url:
+    url: "https://packages.timber.io/vector/{{ vector_version }}/vector-{{ vector_version }}-x86_64-unknown-linux-gnu.tar.gz"
+    dest: "/tmp/vector-{{ vector_version }}.tar.gz"
+    mode: "0644"
+    force: false
+
+- name: Create Vector install dir
+  ansible.builtin.file:
+    path: "{{ vector_install_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Unarchive Vector
+  ansible.builtin.unarchive:
+    src: "/tmp/vector-{{ vector_version }}.tar.gz"
+    dest: "{{ vector_install_dir }}"
+    remote_src: true
+
+- name: Link Vector binary
+  ansible.builtin.file:
+    src: "{{ vector_install_dir }}/vector-x86_64-unknown-linux-gnu/bin/vector"
+    dest: "/usr/local/bin/vector"
+    state: link
+
+- name: Create Vector config dir
+  ansible.builtin.file:
+    path: "{{ vector_config_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Deploy Vector config
+  ansible.builtin.template:
+    src: vector.j2
+    dest: "{{ vector_config_dir }}/vector.yaml"
+    mode: "0644"
+  notify: Restart vector service
+
+- name: Create Vector systemd unit
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/vector.service
+    mode: "0644"
+    content: |
+      [Unit]
+      Description=Vector
+      After=network-online.target
+      [Service]
+      User=root
+      ExecStart=/usr/local/bin/vector --config {{ vector_config_dir }}/vector.yaml
+      Restart=always
+      [Install]
+      WantedBy=multi-user.target
+  notify: Restart vector service
+
+- name: Start Vector
+  ansible.builtin.command: "/usr/local/bin/vector --config {{ vector_config_dir }}/vector.yaml"
+  async: 10
+  poll: 0
+  changed_when: false

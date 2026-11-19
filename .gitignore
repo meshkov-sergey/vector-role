@@ -1,0 +1,20 @@
+# --- Ansible ---
+*.retry
+.ansible/
+ansible.log
+*.pyc
+__pycache__/
+
+# --- Тесты (создаются ansible-galaxy role init) ---
+tests/
+molecule/
+
+# --- Vault ---
+.vault_pass
+vault_pass.txt
+
+# --- IDE и ОС ---
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

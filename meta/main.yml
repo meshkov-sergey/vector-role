@@ -1,0 +1,13 @@
+#SPDX-License-Identifier: MIT-0
+galaxy_info:
+  author: Sergey Meshkov
+  description: Install and configure Vector (log collector)
+  company: Netology
+  license: MIT
+  min_ansible_version: "2.10"
+  galaxy_tags:
+    - vector
+    - logs
+    - observability
+
+dependencies: []
